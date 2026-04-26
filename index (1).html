@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Hacking Ético - Treinamento</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Courier New', monospace;
+        background: #000;
+        color: #00ff88;
+        overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
+        padding-bottom: 80px;
+    }
+    
+    header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #003322;
+        font-size: 16px;
+        letter-spacing: 2px;
+        background: #000;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    
+    .container { 
+        padding: 15px;
+    }
+    
+    .card {
+        border: 1px solid #003322;
+        padding: 18px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: #010101;
+    }
+    
+    .card.locked {
+        opacity: 0.6;
+        position: relative;
+    }
+    
+    .card.locked::after {
+        content: "🔒";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 20px;
+    }
+    
+    .card.free {
+        border-color: #00ff88;
+        box-shadow: 0 0 10px rgba(0,255,136,0.3);
+    }
+    
+    .free-badge {
+        background: #00ff88;
+        color: #000;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    
+    .timer {
+        background: #003322;
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        text-align: center;
+        margin: 10px 0;
+        color: #00ff88;
+    }
+    
+    .title { 
+        font-size: 17px; 
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #00ff88;
+    }
+    
+    .text { 
+        font-size: 14px; 
+        color: #00cc66; 
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+    
+    .text.hidden { display: none; }
+    
+    .btn {
+        background: transparent;
+        border: 1px solid #00ff88;
+        color: #00ff88;
+        padding: 12px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 14px;
+        margin: 8px 0;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .btn:active {
+        background: #00ff8811;
+        transform: scale(0.98);
+    }
+    
+    .btn-free {
+        background: #00ff88;
+        color: #000;
+        border: none;
+    }
+    
+    .btn-copiar, .btn-confirmar, .btn-comprovante {
+        background: #00ff88;
+        color: #000;
+        font-weight: bold;
+    }
+    
+    .buy {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        border-top: 1px solid #003322;
+        padding: 12px 10px;
+        background: rgba(0,0,0,0.95);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+    }
+    
+    .buy button {
+        width: 100%;
+        padding: 14px;
+        background: #00ff88;
+        border: none;
+        font-weight: bold;
+        color: #000;
+        font-size: 16px;
+        border-radius: 8px;
+    }
+    
+    .warning { 
+        font-size: 11px; 
+        color: #ff4444; 
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.98);
+        backdrop-filter: blur(20px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.3s;
+    }
+    
+    .fullscreen-card {
+        background: #010101;
+        border: 1px solid #00ff88;
+        border-radius: 20px;
+        padding: 30px 20px;
+        text-align: center;
+        max-width: 350px;
+        width: 100%;
+    }
+    
+    .fullscreen-card h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .content-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.98);
+        backdrop-filter: blur(20px);
+        z-index: 10000;
+        overflow-y: auto;
+        padding: 20px;
+        animation: fadeIn 0.3s;
+        display: none;
+    }
+    
+    .content-card {
+        background: #010101;
+        border: 1px solid #00ff88;
+        border-radius: 20px;
+        padding: 25px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .content-image {
+        width: 100%;
+        border-radius: 12px;
+        margin: 15px 0;
+        background: linear-gradient(135deg, #001a11, #003322);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 180px;
+        color: #00ff88;
+        font-size: 48px;
+        text-align: center;
+        flex-direction: column;
+    }
+    
+    .content-image span {
+        font-size: 64px;
+        margin-bottom: 10px;
+    }
+    
+    .content-image p {
+        font-size: 12px;
+        color: #00cc66;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    #pixTela {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.98);
+        backdrop-filter: blur(20px);
+        color: #00ff88;
+        z-index: 9999;
+        padding: 25px 16px;
+        text-align: center;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .chave-pix {
+        background: #001a11;
+        border: 1px solid #003322;
+        padding: 18px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        word-break: break-all;
+        margin: 18px 0;
+    }
+    
+    .auth-code {
+        background: #001a11;
+        padding: 15px;
+        border-radius: 12px;
+        margin: 15px 0;
+        font-size: 16px;
+        border: 1px solid #00ff88;
+    }
+    
+    .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #00ff88;
+        color: #000;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        z-index: 10001;
+        animation: fadeIn 0.3s;
+    }
+    
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #003322;
+        z-index: 1001;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: #00ff88;
+        transition: width 0.3s;
+    }
+    
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .nav-buttons button {
+        flex: 1;
+    }
+    
+    .page-indicator {
+        text-align: center;
+        margin: 15px 0;
+        font-size: 12px;
+        color: #00ff88;
+    }
+</style>
+</head>
+<body>
+
+<div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<header>⚡ HACKING ÉTICO // v2.0</header>
+
+<div class="container">
+    <div class="warning">🎓 TREINAMENTO EDUCACIONAL • USO ÉTICO E LEGAL</div>
+
+    <!-- AULA 1 -->
+    <div class="card">
+        <div class="title">📘 [01] INÍCIO</div>
+        <div class="text">Você acha que segurança depende de tecnologia...</div>
+        <div id="a1" class="text hidden">mas na maioria das vezes, o problema nunca está no sistema.</div>
+        <div id="a1b" class="text hidden">🌟 está no comportamento humano.</div>
+        <div id="a1c" class="text hidden">🔐 Por isso que engenharia social é a técnica mais usada por hackers.</div>
+        <div id="a1d" class="text hidden">📊 98% dos ataques envolvem erro humano, não falha técnica.</div>
+        <div id="a1e" class="text hidden">🎯 Um hacker ético precisa entender psicologia, não só código.</div>
+        <button class="btn" onclick="nextAula(1, this)">▶ continuar</button>
+    </div>
+
+    <!-- AULA 2 -->
+    <div class="card">
+        <div class="title">🔍 [02] OBSERVAÇÃO</div>
+        <div class="text">hackers não começam atacando...</div>
+        <div id="a2" class="text hidden">eles começam observando padrões.</div>
+        <div id="a2b" class="text hidden">🎯 e padrões sempre revelam falhas.</div>
+        <div id="a2c" class="text hidden">👀 Um hacker ético observa por horas, dias ou semanas antes de agir.</div>
+        <div id="a2d" class="text hidden">📝 Documentar comportamentos é o primeiro passo para proteger sistemas.</div>
+        <div id="a2e" class="text hidden">🔎 Ferramentas como Wireshark e Nmap ajudam na coleta de dados.</div>
+        <div id="a2f" class="text hidden">📈 Padrões repetidos = vulnerabilidades em potencial.</div>
+        <button class="btn" onclick="nextAula(2, this)">▶ continuar</button>
+    </div>
+
+    <!-- AULA 3 -->
+    <div class="card">
+        <div class="title">⚠️ [03] FALHA</div>
+        <div class="text">toda falha parece invisível...</div>
+        <div id="a3" class="text hidden">até alguém olhar do jeito certo.</div>
+        <div id="a3b" class="text hidden">💡 e é aí que tudo muda.</div>
+        <div id="a3c" class="text hidden">🕳️ Falhas podem estar em código, processos ou comportamento humano.</div>
+        <div id="a3d" class="text hidden">🔧 Identificar a falha é 50% da solução em segurança digital.</div>
+        <div id="a3e" class="text hidden">⚠️ As 10 vulnerabilidades mais comuns: OWASP Top 10.</div>
+        <div id="a3f" class="text hidden">🛠️ Testes de penetração ajudam a encontrar falhas antes dos hackers.</div>
+        <button class="btn" onclick="nextAula(3, this)">▶ continuar</button>
+    </div>
+
+    <!-- AULA 4 - GRÁTIS POR 1 SEMANA -->
+    <div class="card locked free" id="aula4">
+        <div class="free-badge">🎁 GRÁTIS POR 1 SEMANA - R$ 0,00</div>
+        <div class="title">🛡️ [04] PROTEÇÃO AVANÇADA</div>
+        <div class="text">🔐 Conteúdo exclusivo sobre proteção real</div>
+        <div class="text">🛡️ Firewalls, IDS, e boas práticas de segurança</div>
+        <div class="text">📱 Proteção contra engenharia social e phishing</div>
+        <div id="timerAula4" class="timer">⏰ Tempo restante: -- dias -- horas -- min</div>
+        <button class="btn btn-free" onclick="ativarAcessoGratis()">🎁 ATIVAR GRÁTIS AGORA</button>
+    </div>
+    
+    <!-- AULA 5 - BÔNUS PAGO -->
+    <div class="card locked" id="aula5">
+        <div class="title">🚀 [05] BÔNUS ESPECIAL</div>
+        <div class="text">🎁 Certificado + Materiais extras</div>
+        <div class="text">📚 E-book: "Guia do Hacker Ético"</div>
+        <div class="text">💬 Grupo VIP no WhatsApp</div>
+        <button class="btn" onclick="mostrarToast('Complete o pagamento para liberar!')">🔒 conteúdo bloqueado</button>
+    </div>
+</div>
+
+<div class="buy">
+    <button id="btnComprar">💳 LIBERAR ACESSO COMPLETO • R$19,99</button>
+</div>
+
+<!-- TELA DE DESBLOQUEIO FULLSCREEN -->
+<div id="telaDesbloqueio" class="fullscreen-overlay" style="display: none;">
+    <div class="fullscreen-card">
+        <h3>🔓 DESBLOQUEAR ACESSO</h3>
+        <p>Escolha uma opção:</p>
+        <button class="btn btn-free" onclick="fecharDesbloqueioAtivarGratis()" style="margin: 10px 0;">🎁 ATIVAR TESTE GRÁTIS (7 dias)</button>
+        <button class="btn" onclick="fecharDesbloqueioAbrirPix()" style="margin: 10px 0;">💳 COMPRAR ACESSO COMPLETO - R$19,99</button>
+        <button class="btn" onclick="fecharDesbloqueio()" style="margin: 10px 0;">❌ FECHAR</button>
+    </div>
+</div>
+
+<!-- AULA 4 - 8 TELAS DE CONTEÚDO -->
+<!-- TELA 1: Firewalls -->
+<div id="aula4Tela1" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 1/8</div>
+        <h3>🔥 FIREWALLS</h3>
+        <div class="content-image">
+            <span>🔥🛡️</span>
+            <p>Firewall em ação</p>
+        </div>
+        <div class="text">Um firewall é uma barreira entre sua rede interna e a internet.</div>
+        <div class="text">🛡️ Filtra tráfego baseado em regras de segurança</div>
+        <div class="text">📡 Pode ser hardware (físico) ou software</div>
+        <div class="text">⚙️ Firewalls de próxima geração (NGFW) fazem inspeção profunda</div>
+        <div class="text">📊 Empresas usam firewalls para proteger dados sensíveis</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="fecharConteudoAula4()">❌ Fechar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(2)">▶ Tela 2/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 2: IDS/IPS -->
+<div id="aula4Tela2" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 2/8</div>
+        <h3>🚨 IDS / IPS</h3>
+        <div class="content-image">
+            <span>🚨🔍</span>
+            <p>Sistema de Detecção de Intrusão</p>
+        </div>
+        <div class="text"><strong>IDS (Detection System):</strong> Monitora e alerta sobre atividades suspeitas.</div>
+        <div class="text"><strong>IPS (Prevention System):</strong> Monitora e BLOQUEIA automaticamente.</div>
+        <div class="text">🔍 Analisa tráfego em tempo real</div>
+        <div class="text">⚡ Detecta padrões de ataque conhecidos</div>
+        <div class="text">📊 Gera relatórios para análise forense</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(1)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(3)">▶ Tela 3/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 3: Phishing -->
+<div id="aula4Tela3" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 3/8</div>
+        <h3>🎣 PHISHING</h3>
+        <div class="content-image">
+            <span>🎣📧</span>
+            <p>Golpe de Phishing</p>
+        </div>
+        <div class="text">Phishing é a tentativa de obter dados pessoais fingindo ser uma empresa confiável.</div>
+        <div class="text">✉️ Geralmente chega por e-mail, SMS ou WhatsApp</div>
+        <div class="text">🔗 Links falsos que imitam sites verdadeiros</div>
+        <div class="text">💳 Roubo de senhas, dados bancários e informações pessoais</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(2)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(4)">▶ Tela 4/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 4: Como se proteger de Phishing -->
+<div id="aula4Tela4" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 4/8</div>
+        <h3>🛡️ PROTEÇÃO ANTIPHISHING</h3>
+        <div class="content-image">
+            <span>✅🔐</span>
+            <p>Verifique antes de clicar</p>
+        </div>
+        <div class="text">✅ Sempre verifique o remetente do e-mail</div>
+        <div class="text">🔗 Passe o mouse sobre links ANTES de clicar</div>
+        <div class="text">🔐 Nunca forneça senhas por e-mail ou telefone</div>
+        <div class="text">📱 Desconfie de mensagens pedindo dados urgentes</div>
+        <div class="text">🌐 Digite a URL manualmente no navegador</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(3)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(5)">▶ Tela 5/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 5: Autenticação Multifator (MFA/2FA) -->
+<div id="aula4Tela5" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 5/8</div>
+        <h3>🔐 AUTENTICAÇÃO MULTIFATOR (MFA/2FA)</h3>
+        <div class="content-image">
+            <span>🔐📱</span>
+            <p>Autenticação em dois fatores</p>
+        </div>
+        <div class="text"><strong>3 fatores de autenticação:</strong></div>
+        <div class="text">1️⃣ Algo que você SABE (senha)</div>
+        <div class="text">2️⃣ Algo que você TEM (código no celular, token)</div>
+        <div class="text">3️⃣ Algo que você É (biometria/digital)</div>
+        <div class="text">🔒 MFA bloqueia 99.9% dos ataques automatizados</div>
+        <div class="text">📱 Apps como Google Authenticator, Authy, Microsoft Authenticator</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(4)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(6)">▶ Tela 6/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 6: Engenharia Social -->
+<div id="aula4Tela6" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 6/8</div>
+        <h3>🎭 ENGENHARIA SOCIAL</h3>
+        <div class="content-image">
+            <span>🎭🧠</span>
+            <p>Manipulação psicológica</p>
+        </div>
+        <div class="text">Engenharia social é a arte de manipular pessoas para quebrar protocolos de segurança.</div>
+        <div class="text">📞 Técnicas: pretexting, phishing, baiting, tailgating</div>
+        <div class="text">🎯 Explora confiança, medo e curiosidade</div>
+        <div class="text">📊 É a principal causa de violações de dados</div>
+        <div class="text">🧠 Treinamento é a melhor defesa!</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(5)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(7)">▶ Tela 7/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 7: Boas Práticas de Senha -->
+<div id="aula4Tela7" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 7/8</div>
+        <h3>🔑 BOAS PRÁTICAS DE SENHA</h3>
+        <div class="content-image">
+            <span>🔑💪</span>
+            <p>Senhas fortes</p>
+        </div>
+        <div class="text">✅ Use senhas LONGAS (12+ caracteres)</div>
+        <div class="text">✅ Combine letras maiúsculas, minúsculas, números e símbolos</div>
+        <div class="text">✅ NUNCA repita senhas em diferentes serviços</div>
+        <div class="text">🔐 Use um GERENCIADOR de senhas (Bitwarden, 1Password, LastPass)</div>
+        <div class="text">🔄 Troque senhas críticas a cada 3-6 meses</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(6)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="abrirAula4Tela(8)">▶ Tela 8/8</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA 8: Backup e Atualizações -->
+<div id="aula4Tela8" class="content-overlay" style="display: none;">
+    <div class="content-card">
+        <div class="page-indicator">📖 Tela 8/8 - FINAL</div>
+        <h3>💾 BACKUP E ATUALIZAÇÕES</h3>
+        <div class="content-image">
+            <span>💾🔄</span>
+            <p>Backup e Updates</p>
+        </div>
+        <div class="text"><strong>BACKUP (Regra 3-2-1):</strong></div>
+        <div class="text">📀 3 cópias dos dados</div>
+        <div class="text">💿 2 tipos diferentes de mídia</div>
+        <div class="text">🌍 1 cópia offsite (fora do local)</div>
+        <div class="text"><strong>ATUALIZAÇÕES:</strong> Mantenha tudo atualizado! Patches de segurança são essenciais.</div>
+        <div class="text">🎓 PARABÉNS! Você concluiu o treinamento de Proteção Avançada!</div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="abrirAula4Tela(7)">◀ Voltar</button>
+            <button class="btn btn-free" onclick="fecharConteudoAula4()">✅ CONCLUIR TREINAMENTO</button>
+        </div>
+    </div>
+</div>
+
+<!-- TELA PIX -->
+<div id="pixTela">
+    <h2>💚 Pagamento via PIX</h2>
+    <p style="font-size: 20px; font-weight: bold;">R$ 19,99</p>
+    <div id="qrContainer">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00020101021126580014br.gov.bcb.pix01362a8ffcab-8625-46cf-aa02-647e8b856a56520400005303986540619.995802BR5915Treinamento6009Sao Paulo62240520HACKING202512166304B8A3" alt="QR Code PIX" style="max-width:200px;">
+    </div>
+    <p>📱 Chave PIX:</p>
+    <div id="chavePix" class="chave-pix">2a8ffcab-8625-46cf-aa02-647e8b856a56</div>
+    <button class="btn btn-copiar" onclick="copiarChave()">📋 Copiar Chave PIX</button>
+    <button class="btn btn-confirmar" onclick="confirmarPagamento()">✅ Confirmar Pagamento</button>
+    <button id="btnComprovante" class="btn btn-comprovante hidden" onclick="enviarComprovante()">📸 Enviar Comprovante via WhatsApp</button>
+    <button class="btn" onclick="fecharPix()">❌ Fechar</button>
+    <div id="statusPix"></div>
+</div>
+
+<script>
+let codigoAcesso = null;
+let aulasCompletas = 0;
+let acessoGratisAtivo = false;
+let dataExpiracao = null;
+
+const aulasTextos = {
+    1: ['a1', 'a1b', 'a1c', 'a1d', 'a1e'],
+    2: ['a2', 'a2b', 'a2c', 'a2d', 'a2e', 'a2f'],
+    3: ['a3', 'a3b', 'a3c', 'a3d', 'a3e', 'a3f']
+};
+
+let textoIndex = {1: 0, 2: 0, 3: 0};
+
+function nextAula(aula, btn) {
+    const textos = aulasTextos[aula];
+    const currentIndex = textoIndex[aula];
+    
+    if(currentIndex < textos.length - 1) {
+        const nextId = textos[currentIndex + 1];
+        document.getElementById(nextId).classList.remove("hidden");
+        textoIndex[aula]++;
+        mostrarToast('📖 Continue lendo...');
+    } 
+    else if(currentIndex >= textos.length - 1) {
+        btn.innerText = "🔓 ACESSAR CONTEÚDO COMPLETO";
+        mostrarToast('📖 Leitura concluída!');
+        if(!textoIndex[aula] || textoIndex[aula] < textos.length) {
+            textoIndex[aula] = textos.length;
+            aulasCompletas++;
+            atualizarProgresso();
+        }
+        document.getElementById("telaDesbloqueio").style.display = "flex";
+    }
+}
+
+function atualizarProgresso() {
+    const progress = (aulasCompletas / 3) * 100;
+    const fill = document.getElementById('progressFill');
+    if(fill) fill.style.width = progress + '%';
+}
+
+function mostrarToast(mensagem) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = mensagem;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+function verificarAcessoGratis() {
+    const salvo = localStorage.getItem('acessoGratis');
+    const expiracao = localStorage.getItem('expiracaoGratis');
+    
+    if(salvo === 'true' && expiracao) {
+        const agora = new Date().getTime();
+        if(agora < parseInt(expiracao)) {
+            acessoGratisAtivo = true;
+            liberarAula4();
+            atualizarTimer();
+            startTimer();
+        } else {
+            localStorage.removeItem('acessoGratis');
+            localStorage.removeItem('expiracaoGratis');
+            document.getElementById("aula4").classList.add("locked");
+        }
+    }
+}
+
+function ativarAcessoGratis() {
+    const agora = new Date().getTime();
+    const umaSemana = 7 * 24 * 60 * 60 * 1000;
+    dataExpiracao = agora + umaSemana;
+    
+    localStorage.setItem('acessoGratis', 'true');
+    localStorage.setItem('expiracaoGratis', dataExpiracao);
+    
+    acessoGratisAtivo = true;
+    liberarAula4();
+    mostrarToast("🎉 Aula 4 liberada por 7 dias!");
+    atualizarTimer();
+    startTimer();
+}
+
+function liberarAula4() {
+    const aula4 = document.getElementById("aula4");
+    aula4.classList.remove("locked");
+    aula4.classList.add("free");
+    const btn = aula4.querySelector("button");
+    btn.innerHTML = "🎓 ACESSAR CONTEÚDO (8 Telas)";
+    btn.onclick = () => {
+        if(acessoGratisAtivo) {
+            abrirAula4Tela(1);
+        } else {
+            mostrarToast("⚠️ Acesso grátis expirado! Compre o acesso completo.");
+            document.getElementById("telaDesbloqueio").style.display = "flex";
+        }
+    };
+}
+
+function abrirAula4Tela(tela) {
+    for(let i = 1; i <= 8; i++) {
+        const t = document.getElementById(`aula4Tela${i}`);
+        if(t) t.style.display = "none";
+    }
+    document.getElementById(`aula4Tela${tela}`).style.display = "block";
+}
+
+function fecharConteudoAula4() {
+    for(let i = 1; i <= 8; i++) {
+        const t = document.getElementById(`aula4Tela${i}`);
+        if(t) t.style.display = "none";
+    }
+    mostrarToast("✅ Conteúdo concluído! Volte quando quiser.");
+}
+
+function atualizarTimer() {
+    const expiracao = localStorage.getItem('expiracaoGratis');
+    if(expiracao) {
+        const agora = new Date().getTime();
+        const resto = parseInt(expiracao) - agora;
+        
+        if(resto <= 0) {
+            document.getElementById("timerAula4").innerHTML = "⏰ TEMPO ESGOTADO! Compre o acesso.";
+            return;
+        }
+        
+        const dias = Math.floor(resto / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((resto % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutos = Math.floor((resto % (1000 * 60 * 60)) / (1000 * 60));
+        
+        document.getElementById("timerAula4").innerHTML = `⏰ Acesso grátis por: ${dias}d ${horas}h ${minutos}m`;
+    }
+}
+
+function startTimer() {
+    setInterval(() => {
+        if(acessoGratisAtivo) atualizarTimer();
+    }, 60000);
+}
+
+function fecharDesbloqueio() {
+    document.getElementById("telaDesbloqueio").style.display = "none";
+}
+
+function fecharDesbloqueioAbrirPix() {
+    document.getElementById("telaDesbloqueio").style.display = "none";
+    mostrarPix();
+}
+
+function fecharDesbloqueioAtivarGratis() {
+    document.getElementById("telaDesbloqueio").style.display = "none";
+    ativarAcessoGratis();
+}
+
+function mostrarPix(){
+    document.getElementById("pixTela").style.display = "block";
+    document.getElementById("statusPix").innerHTML = "";
+    document.getElementById("btnComprovante").classList.add("hidden");
+    codigoAcesso = null;
+}
+
+function fecharPix(){
+    document.getElementById("pixTela").style.display = "none";
+}
+
+function copiarChave(){
+    const chave = document.getElementById("chavePix").textContent;
+    navigator.clipboard.writeText(chave).then(() => {
+        mostrarToast("✅ Chave PIX copiada!");
+    });
+}
+
+function confirmarPagamento(){
+    codigoAcesso = "HACK-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
+    
+    document.getElementById("statusPix").innerHTML = `
+        <div class="success">
+            ✅ Pagamento confirmado!<br><br>
+            <strong>🎫 SEU CÓDIGO DE ACESSO:</strong><br>
+            <div class="auth-code">${codigoAcesso}</div>
+            <small>📸 Envie o comprovante via WhatsApp para ativar o acesso completo</small>
+        </div>
+    `;
+    
+    document.getElementById("btnComprovante").classList.remove("hidden");
+    mostrarToast("✨ Pagamento registrado! Envie o comprovante.");
+}
+
+function enviarComprovante(){
+    if (!codigoAcesso) {
+        mostrarToast("⚠️ Confirme o pagamento primeiro!");
+        return;
+    }
+    
+    const mensagem = `🎓 COMPROVANTE DE PAGAMENTO - HACKING ÉTICO\n\n✅ Valor: R$ 19,99\n🎫 Código: ${codigoAcesso}\n📅 Data: ${new Date().toLocaleString()}\n\nAguardo liberação do acesso completo das aulas 4 e 5.\nObrigado!`;
+    const url = `https://wa.me/5594981085044?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+    mostrarToast("📱 WhatsApp aberto! Envie o comprovante.");
+}
+
+function liberarAcessoCompleto() {
+    liberarAula4();
+    acessoGratisAtivo = true;
+    
+    const aula5 = document.getElementById("aula5");
+    aula5.classList.remove("locked");
+    const btnAula5 = aula5.querySelector("button");
+    btnAula5.innerHTML = "⭐ ACESSAR BÔNUS";
+    btnAula5.onclick = () => alert("🎉 BÔNUS ESPECIAL!\n\n✅ Certificado de conclusão\n📚 E-book: Guia do Hacker Ético\n💬 Grupo VIP no WhatsApp\n\nParabéns pelo seu comprometimento!");
+    
+    mostrarToast("🎉 PARABÉNS! Acesso completo liberado!");
+    fecharPix();
+    localStorage.setItem('acessoLiberado', 'true');
+}
+
+document.getElementById("btnComprar").addEventListener("click", mostrarPix);
+verificarAcessoGratis();
+
+function verificarAcessoSalvo() {
+    if(localStorage.getItem('acessoLiberado') === 'true') {
+        codigoAcesso = localStorage.getItem('codigoAcesso');
+        liberarAcessoCompleto();
+    }
+}
+verificarAcessoSalvo();
+</script>
+</body>
+</html>
